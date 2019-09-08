@@ -1,0 +1,25 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t romanceresnak/react-test -f ./client/Dockerfile.dev ./client
+  # ./client means look at the client directory for build context
+
+# if any of test finish with zero travis-ci shows failed
+script:
+  - docker run romanceresnak/react-test npm test -- -- coverage # to finish the test not foreach loo
+
+after_success:
+  - docker build -t romanceresnak/multi-client ./client
+  - docker build -t romanceresnak/multi-nginx ./nginx
+  - docker build -t romanceresnak/multi-server ./server
+  - docker build -t romanceresnak/multi-worker ./worker
+  #log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # echo "$DOCKER_PASSWORD" is going to retrieve your docker password from environment variable and then essentially emit that over standard in as input to the next command
+  #Take those images and push them to docker hub
+  - docker push romanceresnak/multi-client
+  - docker push romanceresnak/multi-nginx
+  - docker push romanceresnak/multi-server
+  - docker push romanceresnak/multi-worker
