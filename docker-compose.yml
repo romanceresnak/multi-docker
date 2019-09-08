@@ -1,0 +1,42 @@
+version: "3"
+services:
+  postgres:
+    image: "postgres:latest"
+  redis:
+    image: "redis:latest"
+  nginx:
+    restart: always
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./nginx
+    ports:
+      - "3050:80" # map my localhost port 3050 to container port 80
+  api:
+    build:
+      dockerfile: Dockerfile.dev #do not need to specify folder
+      context: ./server #look at current working directory and use file in server directory
+    volumes:
+      - /app/node_modules # do not try to override this folder
+      - ./server:/app # when app try to access anything from the app expect node+module look at the server directory
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379 # from documentation
+      - PGUSER=postgres # it is displayed in docker hub
+      - PGHOST=postgres # it is displayed in docker hub
+      - PGDATABASE=postgres # it is displayed in docker hub
+      - PGPASSWORD=postgres_password # default password, it is displayed in docker hub
+      - PGPORT=5432 # it is displayed in docker hub
+  client:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./client # look at current working directory and use file in client directory
+    volumes:
+      - /app/node_modules # it wont be overwritten
+      - ./client:/app # everything inside the client directory should be shared with the app folder inside the container
+  worker:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./worker
+    volumes:
+      - /app/node_modules # it wont be overwritten
+      - ./worker:/app # everything inside that folder is going to be kind of mapped over virtually to the app folder inside of a container
