@@ -8,7 +8,7 @@ before_install:
 
 # if any of test finish with zero travis-ci shows failed
 script:
-  - docker run romanceresnak/react-test npm test -- -- coverage # to finish the test not foreach loo
+  - docker run romanceresnak/react-test npm test -- --coverage # to finish the test not foreach loo
 
 after_success:
   - docker build -t romanceresnak/multi-client ./client
